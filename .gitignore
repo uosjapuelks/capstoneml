@@ -36,3 +36,7 @@
 
 #ipynb vent
 venv/
+
+#model and training
+models/
+datasets/

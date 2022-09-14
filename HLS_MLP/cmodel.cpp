@@ -21,12 +21,13 @@ void mlpLaserTag(stream_t S_AXIS, stream_t& M_AXIS){
 	data_t in_buffer_0[INPUT_LAYER];
 	data_t in_buffer_1[LAYER_0];
 	data_t in_buffer_2[LAYER_1];
-//	data_t in_buffer_3[LAYER_2];
+	data_t in_buffer_3[LAYER_2];
 	data_t out_buffer[OUTPUT];
 
 	Matrix<data_t, INPUT_LAYER, LAYER_0> m0;
 	Matrix<data_t, LAYER_0, LAYER_1> m1;
 	Matrix<data_t, LAYER_1,LAYER_2> m2;
+	Matrix<data_t, LAYER_2,OUTPUT> m3;
 
 	int initialised = 0;
 	int listening = 1;
@@ -86,34 +87,33 @@ void mlpLaserTag(stream_t S_AXIS, stream_t& M_AXIS){
 			}
 			else if (listening==0) {
 				data_t val;
-//				l0:for(int i=0; i<INPUT_LAYER; i++){
-//				#pragma HLS pipeline
-//					m0.dot_prod(input,layer_w_0[i],val);
-//					in_buffer_0[i]=ReLu<data_t>(val + bias_0[i]);
-//				}
-//				l1:for(int i=0; i<LAYER_0; i++){
-//				#pragma HLS pipeline
-//					m1.dot_prod(input,layer_w_1[i],val);
-//					in_buffer_1[i]=ReLu<data_t>(val + bias_1[i]);
-//				}
-//				l2:for(int i=0; i<LAYER_1; i++){
-//				#pragma HLS pipeline
-//					m1.dot_prod(input,layer_w_2[i],val);
-//					in_buffer_2[i]=ReLu<data_t>(val + bias_2[i]);
-//				}
-//				l3:for(int i=0; i<LAYER_2; i++){
-//				#pragma HLS pipeline
-//					m2.dot_prod(input,out_w[i],val);
-//					out_buffer[i]=ReLu<data_t>(val + out_b[i]);
-//				}
+				l0:for(int i=0; i<LAYER_0; i++){
+				#pragma HLS pipeline
+					m0.dot_prod(input,layer_w_0,i,val);
+					in_buffer_0[i]=ReLu<data_t>(val + bias_0[i]);
+				}
+				l1:for(int i=0; i<LAYER_1; i++){
+				#pragma HLS pipeline
+					m1.dot_prod(in_buffer_0,layer_w_1,i,val);
+					in_buffer_1[i]=ReLu<data_t>(val + bias_1[i]);
+				}
+				l2:for(int i=0; i<LAYER_2; i++){
+				#pragma HLS pipeline
+					m2.dot_prod(in_buffer_1,layer_w_2,i,val);
+					in_buffer_2[i]=ReLu<data_t>(val + bias_2[i]);
+				}
+				l3:for(int i=0; i<OUTPUT; i++){
+				#pragma HLS pipeline
+					m3.dot_prod(in_buffer_2,out_w,i,val);
+					out_buffer[i]=ReLu<data_t>(val + out_b[i]);
+				}
 				output_0:for(int i=0; i<OUTPUT; i++){
-					out_buffer[i]=i;
 					out.data=out_buffer[i];
 					if(i==(OUTPUT-1)){
 						out.last=true;
 					}
-					M_AXIS << out;
 				}
+				M_AXIS << out;
 				listening=1;
 			}
 		}

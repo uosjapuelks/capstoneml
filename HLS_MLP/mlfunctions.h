@@ -28,3 +28,12 @@ template <class T> T ReLu(T a) {
 	}
 };
 
+float dot_(float a[][], float b[], int n, int m) {
+	int val = 0;
+	for (int i = 0; i<n; i++) {
+	#pragma HLS unroll
+		val+=a[i][m]*b[i];
+	}
+	return sum;
+}
+

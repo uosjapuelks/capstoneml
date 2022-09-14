@@ -9,6 +9,7 @@ ACCEL_DIR = Path(RAW_DIR, "accel")
 GYRO_DIR = Path(RAW_DIR, "gyro")
 
 MODEL_DIR = Path(ROOT_DIR, "models")
+WEIGHT_DIR = Path(MODEL_DIR, "weights")
 
 # paths.get('<NAME>')
 
@@ -18,7 +19,8 @@ paths = {
     'RAW_DIR' : Path(RAW_DIR),
     'ACCEL_DIR' : Path(ACCEL_DIR),
     'GYRO_DIR' : Path(GYRO_DIR),
-    'MODEL_DIR' : Path(MODEL_DIR)
+    'MODEL_DIR' : Path(MODEL_DIR),
+    'WEIGHT_DIR' : Path(WEIGHT_DIR)
 }
 
 for p in paths.values():

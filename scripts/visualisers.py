@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plot_history(history, epochs):
     # Plot training & validation accuracy values

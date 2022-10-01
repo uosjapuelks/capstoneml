@@ -1,7 +1,7 @@
 //#include "ap_axi_sdata.h" // ap_axis can also be used, but it will include all sideband signals which we don't need
 #include "hls_stream.h"
 //#include "ap_int.h"
-#include "params.h"
+#include "conv_params.h"
 #include "mlfunctions.h"
 
 // Creating a custom structure which includes the data word and TLAST signal.
@@ -60,13 +60,13 @@ void myip_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS){
 		data_t val;
 		conv0: for(int i=0; i<CONV_0; i++){
 			for (int j=0; j<(20-KERNEL_0+1);j++){
-				c0.convolute(in_buffer_0,conv_out_0,i,j,val);
+				c0.convolute(in_buffer_0,w_conv_0,i,j,val);
 				conv_out_0[i*KERNEL_0+j]=ReLu<data_t>(val+conv_b_0[i])
 			}
 		}
 		conv1: for(int i=0; i<CONV_1; i++){
 			for (int j=0; j<(20-KERNEL_0+1-KERNEL_1+1);j++){
-				c1.convolute(conv_out_0,conv_out_1,i,j,val);
+				c1.convolute(conv_out_0,w_conv_1,i,j,val);
 				conv_out_1[i*KERNEL_1+j]=ReLu<data_t>(val+conv_b_1[i])
 			}
 		}

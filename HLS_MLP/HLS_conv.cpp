@@ -10,7 +10,7 @@
 // However, it is necessary for us since we connecting M_AXIS to AXI Stream FIFO / AXI DMA.
 // So, we create a struct with data (TDATA) and last (TLAST). The rest of the essential AXIS signals are automatically dealt with by the HLS tool.
 
-void myip_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS){
+void myconv_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS){
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=S_AXIS
 #pragma HLS INTERFACE axis port=M_AXIS
@@ -37,8 +37,8 @@ void myip_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS){
 	data_t in_buffer_2[LAYER_1];
 	data_t out_buffer[OUTPUT];
 //<class T, int kernelSize, int filterSize, int in_filts>
-	Conv<data_t, KERNEL_0, CONV_0, IN_FILTERS> c0;
-	Conv<data_t, KERNEL_1, CONV_1, CONV_0> c1;
+	Conv<data_t, KERNEL_0, CONV_0, IN_FILTERS, 20> c0;
+	Conv<data_t, KERNEL_1, CONV_1, CONV_0, 18> c1;
 
 	Matrix<data_t, LAYER_0, FLATTEN> m1;
 	Matrix<data_t, LAYER_1, LAYER_0> m2;
@@ -61,13 +61,13 @@ void myip_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS){
 		conv0: for(int i=0; i<CONV_0; i++){
 			for (int j=0; j<(20-KERNEL_0+1);j++){
 				c0.convolute(in_buffer_0,w_conv_0,i,j,val);
-				conv_out_0[j*CONV_0+i]=ReLu<data_t>(val+conv_b_0[i])
+				conv_out_0[j*CONV_0+i]=ReLu<data_t>(val+conv_b_0[i]);
 			}
 		}
 		conv1: for(int i=0; i<CONV_1; i++){
 			for (int j=0; j<(20-KERNEL_0+1-KERNEL_1+1);j++){
 				c1.convolute(conv_out_0,w_conv_1,i,j,val);
-				conv_out_1[j*CONV_1+i]=ReLu<data_t>(val+conv_b_1[i])
+				conv_out_1[j*CONV_1+i]=ReLu<data_t>(val+conv_b_1[i]);
 			}
 		}
 		l0:for(int i=0; i<LAYER_0; i++){
@@ -80,7 +80,7 @@ void myip_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS){
 		}
 		l3:for(int i=0; i<OUTPUT; i++){
 			m4.dot_prod(in_buffer_2,w_layer_3,i,val);
-			out_buffer[i]=val + out_b[i];
+			out_buffer[i]=ReLu<data_t>(val + out_b[i]);
 		}
 
 		myip_HLS_for2:for(int i = 0; i < OUTPUT; i++){

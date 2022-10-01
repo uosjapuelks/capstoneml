@@ -64,11 +64,11 @@ public:
 			for (int j=0; j<kernelSize; j++){
 				#pragma HLS unroll
 				int idx = j*in_filts+i;
-				conv_p += in_int[idx]*conv_kernels[j][i][k]	
+				conv_p += in_int[idx]*conv_kernels[j][i][k];
 			}
 		}
 		out = conv_p;
 	}
-}
+};
 
 #endif

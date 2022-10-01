@@ -61,13 +61,13 @@ void myip_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS){
 		conv0: for(int i=0; i<CONV_0; i++){
 			for (int j=0; j<(20-KERNEL_0+1);j++){
 				c0.convolute(in_buffer_0,w_conv_0,i,j,val);
-				conv_out_0[i*KERNEL_0+j]=ReLu<data_t>(val+conv_b_0[i])
+				conv_out_0[j*CONV_0+i]=ReLu<data_t>(val+conv_b_0[i])
 			}
 		}
 		conv1: for(int i=0; i<CONV_1; i++){
 			for (int j=0; j<(20-KERNEL_0+1-KERNEL_1+1);j++){
 				c1.convolute(conv_out_0,w_conv_1,i,j,val);
-				conv_out_1[i*KERNEL_1+j]=ReLu<data_t>(val+conv_b_1[i])
+				conv_out_1[j*CONV_1+i]=ReLu<data_t>(val+conv_b_1[i])
 			}
 		}
 		l0:for(int i=0; i<LAYER_0; i++){

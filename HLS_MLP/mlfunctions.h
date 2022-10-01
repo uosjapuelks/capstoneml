@@ -67,7 +67,7 @@ public:
 				conv_p += in_int[idx]*conv_kernels[j][i][k]	
 			}
 		}
-	out = conv_p;
+		out = conv_p;
 	}
 }
 

@@ -83,7 +83,20 @@ void myconv_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS
 			out_buffer[i]=ReLu<data_t>(val + out_b[i]);
 		}
 
-		myip_HLS_for2:for(int i = 0; i < OUTPUT; i++){
+		int out_i = 0;
+		for (int i=0; i<OUTPUT;i++){
+			if (out_buffer[out_i] < out_buffer[i]){
+				out_i=i;
+			}
+		}
+
+		//write_output.data = sum.to_int();	// using arbitrary precision
+		write_output.data = out_i;			// using 32 bit precision
+		// write_output is the element sent by our ip through M_AXIS in one clock cycle.
+		write_output.last = 1;
+		M_AXIS.write(write_output);
+		// write() inserts it into the stream. Overloaded operator << can also be used.
+		/*myip_HLS_for2:for(int i = 0; i < OUTPUT; i++){
 			//write_output.data = sum.to_int();	// using arbitrary precision
 			write_output.data = out_buffer[i];			// using 32 bit precision
 			// write_output is the element sent by our ip through M_AXIS in one clock cycle.
@@ -96,7 +109,7 @@ void myconv_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS
 			}
 			M_AXIS.write(write_output);
 			// write() inserts it into the stream. Overloaded operator << can also be used.
-		}
+		}*/
 		test++;
 	}
 	

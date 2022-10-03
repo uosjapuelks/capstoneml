@@ -24,7 +24,7 @@ def plot_history(history, epochs):
 
 
 def plot_activity(activity, data):
-    fig, (ax0, ax1, ax2, ax3, ax4, ax5) = plt.subplots(nrows=6, figsize=(15,7), sharex=True)
+    fig, (ax0, ax1, ax2, ax3, ax4, ax5) = plt.subplots(nrows=6, figsize=(18,12), sharex=True)
     plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS')
     plot_axis(ax1, data['time'], data['gy'], 'GY-AXIS')
     plot_axis(ax2, data['time'], data['gz'], 'GZ-AXIS')
@@ -37,8 +37,22 @@ def plot_activity(activity, data):
     plt.subplots_adjust(top=0.90)
     plt.show()
 
+def plot_full(data):
+    fig, (ax0, ax1, ax2, ax3, ax4, ax5) = plt.subplots(nrows=6, figsize=(18,12), sharex=True)
+    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS')
+    plot_axis(ax1, data['time'], data['gy'], 'GY-AXIS')
+    plot_axis(ax2, data['time'], data['gz'], 'GZ-AXIS')
+    plot_axis(ax3, data['time'], data['ax'], 'AX-AXIS')
+    plot_axis(ax4, data['time'], data['ay'], 'AY-AXIS')
+    plot_axis(ax5, data['time'], data['az'], 'AZ-AXIS')
+    
+    plt.subplots_adjust(hspace=0.2)
+    fig.suptitle("DATAFRAME")
+    plt.subplots_adjust(top=0.90)
+    plt.show()
+
 def plot_features(activity, data):
-    fig, (ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10) = plt.subplots(nrows=11, figsize=(20,15), sharex=True)
+    fig, (ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10) = plt.subplots(nrows=11, figsize=(18,12), sharex=True)
     plot_axis(ax0, data['time'], data['max_a'], 'MAX-A')
     plot_axis(ax1, data['time'], data['min_a'], 'MIN-A')
     plot_axis(ax2, data['time'], data['range_a'], 'RANGE-A')

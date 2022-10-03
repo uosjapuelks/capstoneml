@@ -6,6 +6,7 @@ ROOT_DIR = (Path.cwd()).parent
 DATA_DIR = Path(ROOT_DIR, "datasets")
 RAW_DIR = Path(DATA_DIR, "raw")
 SELF_DIR = Path(DATA_DIR, "self")
+TEST_DIR = Path(DATA_DIR, "test")
 ACCEL_DIR = Path(RAW_DIR, "accel")
 GYRO_DIR = Path(RAW_DIR, "gyro")
 
@@ -19,6 +20,7 @@ paths = {
     'DATA_DIR' : Path(ROOT_DIR),
     'RAW_DIR' : Path(RAW_DIR),
     'SELF_DIR' : Path(SELF_DIR),
+    'TEST_DIR' : Path(TEST_DIR),
     'ACCEL_DIR' : Path(ACCEL_DIR),
     'GYRO_DIR' : Path(GYRO_DIR),
     'MODEL_DIR' : Path(MODEL_DIR),

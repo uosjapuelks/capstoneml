@@ -91,17 +91,9 @@ def get_m_features(fdf, verbose=False):
         else:
             features.extend(features_tmp)
     
-    if verbose:
-        features.append('accel_z_peaks')
-    else:
-        normed = mmscaler.fit_transform(fdf['az'].values.reshape(-1,1))[:,0]
-        normed = normed[0:len(normed):5]
-        # normed = np.diff((normed>0.77).astype(int))
-        # normed = normed[normed>0]
-        features.append(sum(normed))
     return features
 
-def extract_features(df_copy, timestep):
+def extract_features(df_copy, timestep, timestart=0):
     idx = 0-timestep
     all_time_features=[]
     for i in range(int(df_copy.shape[0]/timestep)):
@@ -112,6 +104,6 @@ def extract_features(df_copy, timestep):
         all_time_features.append(features)
 
     feat_df = pd.DataFrame(all_time_features,columns=features_names)
-    feat_df['time'] = [x for x in range(feat_df.shape[0])]
+    feat_df['time'] = [x+timestart for x in range(feat_df.shape[0])]
 
     return feat_df

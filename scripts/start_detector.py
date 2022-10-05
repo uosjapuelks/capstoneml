@@ -37,7 +37,6 @@ class Detector:
         raw_data_row = np.array(raw_data_row).reshape(1,6)
         new_row = pd.DataFrame(raw_data_row, columns=self.cols)
         self.cur_data=pd.concat([self.cur_data, new_row], ignore_index=True)
-        # self.cur_data.append(new_row)
         return
 
 
@@ -75,7 +74,7 @@ class Detector:
             if self.prev_std_bool==True:
                 self.prev_std_bool = False
                 # RELEASE RES
-                print(self.res_ls)
+                # print(self.res_ls)
                 return stats.mode(self.res_ls)[0][0] # NOT SURE
             else:
                 return 4 # (4 IS IDLE)

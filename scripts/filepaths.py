@@ -13,6 +13,8 @@ GYRO_DIR = Path(RAW_DIR, "gyro")
 MODEL_DIR = Path(ROOT_DIR, "models")
 WEIGHT_DIR = Path(MODEL_DIR, "weights")
 
+BITS_DIR = Path(ROOT_DIR, "mlp_bitstreams")
+
 # paths.get('<NAME>')
 
 paths = {
@@ -24,7 +26,8 @@ paths = {
     'ACCEL_DIR' : Path(ACCEL_DIR),
     'GYRO_DIR' : Path(GYRO_DIR),
     'MODEL_DIR' : Path(MODEL_DIR),
-    'WEIGHT_DIR' : Path(WEIGHT_DIR)
+    'WEIGHT_DIR' : Path(WEIGHT_DIR),
+    'BITS_DIR' : Path(BITS_DIR)
 }
 
 for p in paths.values():

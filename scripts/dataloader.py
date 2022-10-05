@@ -1,9 +1,6 @@
 import pandas as pd
 import numpy as np
 from filepaths import paths
-from sklearn.preprocessing import  MinMaxScaler
-
-mmscaler = MinMaxScaler()
 
 def get_training_files():
     trainfiles = list(paths.get('SELF_DIR').glob('*'))

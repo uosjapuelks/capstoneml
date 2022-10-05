@@ -64,6 +64,21 @@ def get_frames(filt_df, frame_size, hop_size, labelled=True):
 
     return frames, labels
 
+def extract_frames(raw_df, frame_size, hop_size, start_idx=0):
+    N_FEATURES = 6
+    frames = []
+    for i in range(start_idx, len(raw_df)-frame_size, hop_size):
+        gx = raw_df['gx'].values[i: i + frame_size]
+        gy = raw_df['gy'].values[i: i + frame_size]
+        gz = raw_df['gz'].values[i: i + frame_size]
+        ax = raw_df['ax'].values[i: i + frame_size]
+        ay = raw_df['ay'].values[i: i + frame_size]
+        az = raw_df['az'].values[i: i + frame_size]
+        frames.append([gx,gy,gz,ax,ay,az])
+    frames = np.asarray(frames).reshape(-1, frame_size, N_FEATURES)
+    return frames
+
+
 def calculate_emd(res, fs, tAxis, fAxis, kind='quadratic'):
     upper_peaks, _ = find_peaks(res)
     lower_peaks, _ = find_peaks(res)

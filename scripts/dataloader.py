@@ -64,15 +64,28 @@ def load_to_df(trainfiles, col_names):
             df = pd.concat([df, tmp_df], axis=0, join='outer')
     return df
 
-def get_features(series, verbose=False):
+def get_range(series):
+    return max(series)-min(series)
+
+def get_mean(series):
+    return series.mean()
+
+def get_std(series):
+    return series.std()
+
+def get_features(series, target=['max','min','range','mean','std'], verbose=False):
+    com_dict = {
+        'max': max,
+        'min': min,
+        'range': get_range,
+        'mean': get_mean,
+        'std': get_std
+    }
     if verbose:
-        return ['max','min','range','mean','std']
+        return target
     features = []
-    features.append(max(series))
-    features.append(min(series))
-    features.append(max(series)-min(series))
-    features.append(series.mean())
-    features.append(series.std())
+    for t in target:
+        features.append(com_dict[t](series))
     return features    
 
 def get_m_features(fdf, verbose=False):
@@ -85,7 +98,7 @@ def get_m_features(fdf, verbose=False):
     )
 
     for v in ['a','g']:
-        features_tmp = get_features(fdf[v], verbose)
+        features_tmp = get_features(fdf[v], verbose=verbose)
         if verbose:
             features.extend(x + '_' + v for x in features_tmp)
         else:
@@ -99,11 +112,39 @@ def extract_features(df_copy, timestep, timestart=0):
     for i in range(int(df_copy.shape[0]/timestep)):
         idx += timestep
         df_c_tmp = df_copy.iloc[idx:idx+20,:]
-        features_names = get_m_features(df_c_tmp, True)
+        features_names = get_m_features(df_c_tmp, verbose=True)
         features = get_m_features(df_c_tmp)
         all_time_features.append(features)
 
     feat_df = pd.DataFrame(all_time_features,columns=features_names)
+    feat_df['time'] = [x+timestart for x in range(feat_df.shape[0])]
+
+    return feat_df
+
+def get_target_feat(data, verbose=False):
+    features=[]
+    data["a"]=np.linalg.norm((data["ax"],data["ay"],data["az"]), axis=0)
+    data["g"]=np.linalg.norm((data["gx"],data["gy"],data["gz"]), axis=0)
+
+    for v in ['a', 'g']:
+        f_tmp = get_features(data[v], target=['range', 'std'], verbose=verbose)
+        if verbose:
+            features.extend(x+'_'+v for x in f_tmp)
+        else:
+            features.extend(f_tmp)
+    return features
+
+def extract_std_range(df_copy, timestep, timestart=0):
+    idx = 0-timestep
+    all_time_features=[]
+    for i in range(int(df_copy.shape[0]/timestep)):
+        idx += timestep
+        df_c_tmp = df_copy.iloc[idx:idx+timestep,:]
+        features_names = get_target_feat(df_c_tmp, verbose=True)
+        features = get_target_feat(df_c_tmp)
+        all_time_features.append(features)
+
+    feat_df = pd.DataFrame(all_time_features, columns=features_names)
     feat_df['time'] = [x+timestart for x in range(feat_df.shape[0])]
 
     return feat_df

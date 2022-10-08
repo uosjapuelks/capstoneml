@@ -13,6 +13,10 @@ class AI_FPGA:
 
     in_buffer0 = allocate(shape=(120,), dtype=np.float32)
     out_buffer0 = allocate(shape=(1,), dtype=np.float32)
+
+    ###
+    ### TAKE NOTE! Fs MAY CHANGE
+    ###
     seconds = 1
     Fs = 20
     frame_size = Fs*seconds # 20Hz * 1 = 20

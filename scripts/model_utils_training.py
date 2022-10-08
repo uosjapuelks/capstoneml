@@ -1,14 +1,17 @@
-# import tensorflow as tf
+from pandas.core import frame
+import tensorflow as tf
 import numpy as np
 import pandas as pd
-# from keras.utils import to_categorical
-# from sklearn.model_selection import train_test_split
+from keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
 import scipy.stats as stats
-# from sklearn.preprocessing import LabelEncoder
-# from scipy.signal import find_peaks
-# from scipy.interpolate import interp1d
-# from scipy.fftpack import fft
-# import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from scipy.signal import find_peaks
+from scipy.interpolate import interp1d
+from scipy.fftpack import fft
+import matplotlib.pyplot as plt
+from random import sample
+
 def encode(df):
     label = LabelEncoder()
     df['label'] = label.fit_transform(df['Activity_code'])
@@ -62,6 +65,28 @@ def get_frames(filt_df, frame_size, hop_size, labelled=True):
     if labelled:
         labels = np.asarray(labels)
 
+    return frames, labels
+
+def balance_frames(x, y, bal_num, classes_n=5):
+    frames=[]
+    labels=[]
+    sampledf = pd.DataFrame(y)
+    for i in range(classes_n):
+        print(i, end=": ")
+        s_idx = sampledf.index[sampledf[0].isin([i])].tolist()
+        if (len(s_idx) < bal_num):
+            to_bal = len(s_idx)
+        else:
+            to_bal = bal_num
+        print(to_bal, "SAMPLES!!")
+        s_idx = sample(s_idx, to_bal)
+
+        for idx in s_idx:
+            frames.append(x[idx])
+            labels.append(y[idx])
+    frames = np.asarray(frames).reshape(-1, x.shape[1], x.shape[2])
+    labels = np.asarray(labels)
+    
     return frames, labels
 
 def extract_frames(raw_df, frame_size, hop_size, start_idx=0):

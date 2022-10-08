@@ -1,10 +1,18 @@
+# import tensorflow as tf
 import numpy as np
 import pandas as pd
+# from keras.utils import to_categorical
+# from sklearn.model_selection import train_test_split
 import scipy.stats as stats
+# from sklearn.preprocessing import LabelEncoder
 # from scipy.signal import find_peaks
 # from scipy.interpolate import interp1d
 # from scipy.fftpack import fft
 # import matplotlib.pyplot as plt
+def encode(df):
+    label = LabelEncoder()
+    df['label'] = label.fit_transform(df['Activity_code'])
+    return df, label
 
 def scale_255(x):
     return (x)/255

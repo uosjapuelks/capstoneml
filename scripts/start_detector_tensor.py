@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 from scipy.stats import stats
 
-from ai import AI_FPGA
+from ai_tensor import AI_FPGA
 from dataloader import extract_std_range
-from modelling_utils import extract_frames
+from model_utils_training import extract_frames
 
 
 # Permanent
@@ -27,7 +27,7 @@ class Detector:
     
     feat_df = pd.DataFrame()
     prev_std_bool = False
-    res_ls = [4]
+    res_ls = [2]
     counter = -1
 
 # Setup DMA stuff
@@ -45,7 +45,7 @@ class Detector:
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
-            return 5
+            return 2
         elif self.counter==20:
             self.counter=-1
 
@@ -77,7 +77,7 @@ class Detector:
                 # print(self.res_ls)
                 return stats.mode(self.res_ls)[0][0] # NOT SURE
             else:
-                return 4 # (4 IS IDLE)
+                return 2 # (4 IS IDLE)
 
         # store index where std > threshold -> Start Call AI from index
         # True -> call Ai Predict Function -> store in res_ls               2 out of 3 predictions should not be IDLE & keep last val to compare with next half if std > thres
@@ -85,15 +85,16 @@ class Detector:
             idx = feat.std_a[feat.std_a==max_std].index.tolist()[0]*self.fpga.frame_size
             frames = extract_frames(data,self.fpga.frame_size,self.fpga.hop_size,start_idx=idx)
             tmp_res=[]
-
+            print(frames)
             for frame in frames:
                 res_fpga = self.fpga.fpga_predict(frame)
                 tmp_res.append(res_fpga)
+                print("NOW", res_fpga, "AND", tmp_res)
         # if Predict res list mode == IDLE -> Ignore Threshold Rise
         # res_ls = res_ls[last]
-            
-            if res_mode==4:
-                res_mode = stats.mode(tmp_res)[0][0]
+            res_mode = stats.mode(tmp_res)[0][0]
+            if res_mode==2:
+                
                 self.res_ls=[self.res_ls[-1]]
         # else res_ls append res > check res_lsmode
             else:
@@ -105,4 +106,4 @@ class Detector:
                     self.res_ls.append(res_mode)
         # if res_mode != prevres:
             # return res_ls content                                         Ensure action done before return res
-        return 4 # IDLE
+        return 2 # IDLE

@@ -26,4 +26,5 @@ class AI_FPGA:
         self.dma.recvchannel.transfer(self.out_buffer0)
         self.dma.sendchannel.wait()
         self.dma.recvchannel.wait()
-        return self.out_buffer0
+
+        return int(self.out_buffer0[0])

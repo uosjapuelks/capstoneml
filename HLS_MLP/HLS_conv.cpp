@@ -15,20 +15,6 @@ void myconv_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS
 #pragma HLS INTERFACE axis port=S_AXIS
 #pragma HLS INTERFACE axis port=M_AXIS
 
-/*
-	INPUT_LAYER		120
-	IN_FILTERS		6
-	CONV_0			24
-	KERNEL_0		3
-	CONV_1			48
-	KERNEL_1		4
-
-	FLATTEN			720
-	LAYER_0			64
-	LAYER_1			32
-	OUTPUT			4
-*/
-
 	data_t in_buffer_0[INPUT_LAYER];
 	data_t conv_out_0[(20-KERNEL_0+1)*CONV_0];
 	data_t conv_out_1[(20-KERNEL_0+1-KERNEL_1+1)*CONV_1];
@@ -83,20 +69,13 @@ void myconv_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS
 			out_buffer[i]=ReLu<data_t>(val + out_b[i]);
 		}
 
-		int out_i = 0;
-		for (int i=0; i<OUTPUT;i++){
-			if (out_buffer[out_i] < out_buffer[i]){
-				out_i=i;
-			}
-		}
-
 		//write_output.data = sum.to_int();	// using arbitrary precision
-		write_output.data = out_i;			// using 32 bit precision
+		// write_output.data = out_i;			// using 32 bit precision
 		// write_output is the element sent by our ip through M_AXIS in one clock cycle.
-		write_output.last = 1;
-		M_AXIS.write(write_output);
+		// write_output.last = 1;
+		// M_AXIS.write(write_output);
 		// write() inserts it into the stream. Overloaded operator << can also be used.
-		/*myip_HLS_for2:for(int i = 0; i < OUTPUT; i++){
+		myip_HLS_for2:for(int i = 0; i < OUTPUT; i++){
 			//write_output.data = sum.to_int();	// using arbitrary precision
 			write_output.data = out_buffer[i];			// using 32 bit precision
 			// write_output is the element sent by our ip through M_AXIS in one clock cycle.
@@ -109,7 +88,7 @@ void myconv_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS
 			}
 			M_AXIS.write(write_output);
 			// write() inserts it into the stream. Overloaded operator << can also be used.
-		}*/
+		}
 		test++;
 	}
 	

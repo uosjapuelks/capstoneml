@@ -63,21 +63,22 @@ int main()
 	success=1;
 
 	printf(" Comparing data ... \r\n");
+	/*
 	for (int tcnt=0; tcnt< TEST_CASES; tcnt++){
 		for(int i=0; i<1;i++){
 			printf("Data Received: %f, %f ...\r\n",result_memory[tcnt][i], test_restult_expected_memory[tcnt][i]);
 			success = success & (result_memory[tcnt][i] == test_restult_expected_memory[tcnt][i]);
 		}
 	}
+	*/
 
-/*
 	for (int tcnt=0; tcnt< TEST_CASES; tcnt++){
 		for(int i=0; i<OUTPUT;i++){
 			printf("Data Received: %f, %f ...\r\n",result_memory[tcnt][i], test_restult_expected_memory[tcnt][i]);
 			success = success & (result_memory[tcnt][i] == test_restult_expected_memory[tcnt][i]);
 		}
 	}
-*/
+
 	if (success!=1) {
 		printf("Test Failed \r\n");
 		return 1;

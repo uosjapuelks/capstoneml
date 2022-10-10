@@ -4,6 +4,7 @@ import numpy as np
 import os
 
 from filepaths import paths
+from modelling_utils import softmax
 
 BIT = os.path.join(paths.get('BITS_DIR'), 'conv_design_0.bit')
 
@@ -32,5 +33,6 @@ class AI_FPGA:
         self.dma.sendchannel.wait()
         self.dma.recvchannel.wait()
 
-        chances = self.out_buffer0[0]
+        chances = np.array(self.out_buffer0[0])
+        chances = softmax(chances)
         return chances, np.argmax(chances)

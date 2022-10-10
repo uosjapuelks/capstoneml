@@ -5,7 +5,7 @@ from scipy.stats import stats
 
 from ai import AI_FPGA
 from dataloader import extract_std_range
-from modelling_utils import extract_frames
+from modelling_utils import scale_vals
 
 # Make Class
 class Detector:
@@ -22,78 +22,71 @@ class Detector:
         self.fpga = AI_FPGA()
         self.res_ls = [self.fpga.idle_code]
         self.feat_df = pd.DataFrame()
-        self.prev_std_bool = False
+        self.margin = 0
         self.counter = 0
 
+    # Collect and accumulate rows into dataframes of 20
     def process_data(self, raw_data_row):
         raw_data_row = np.array(raw_data_row).reshape(1,6)
         new_row = pd.DataFrame(raw_data_row, columns=self.cols)
-        self.cur_data=pd.concat([self.cur_data, new_row], ignore_index=True)
-        return
+        self.cur_data=pd.concat([self.prev_data, new_row], ignore_index=True)
+        self.prev_data=self.cur_data.iloc[:]
 
+    # Check if selected threshold is exceeded
     def check_df_threshold(self, data):
-    # current data
-    # current tmp
-    # Append data to prev -> into tmp
-    # prev = later half of data
-        tmp = pd.concat([self.prev_data, data], ignore_index=True)
-        self.prev_data=data.iloc[self.counter:]
-
-        feat = extract_std_range(tmp, self.fpga.Fs)
-
+        feat = extract_std_range(data, self.fpga.frame_size)
         max_std = (max(feat['std_a']))
-        if max_std > 0.075:
-            self.prev_std_bool=True
-            return -1
-        else:
-            if self.prev_std_bool==True:
-                self.prev_std_bool=False
-                return stats.mode(self.res_ls)[0][0]
-            else:
-                return self.fpga.idle_code
+        return max_std > 0.065
 
+    # Check for return value
+    def checkRetVal(self):
+        length = len(self.res_ls)
+        ret_val = int(stats.mode(self.res_ls, keepdims=True)[0][0])
+        if ret_val==0 and length>10:
+            self.res_ls = [self.fpga.idle_code]
+            return ret_val
+        elif length > 3 and ret_val!=0:
+            self.res_ls = [self.fpga.idle_code]
+            return ret_val
+        else:
+            return self.fpga.idle_code
+    
+    # margins help with acccidental classification of idle randomly
+    def checkMargins(self):
+        if self.margin==0:
+            ret_val = self.checkRetVal()
+        else:
+            self.margin-=1
+            ret_val = self.fpga.idle_code
+        return ret_val
 
 # Function - Constantly called by External Comms after initializing class
-    def eval_data(self, raw_data):
+    def eval_data(self, raw_data, errMarg=1):
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
             return self.fpga.idle_code
         elif self.counter==20:
             self.counter-=self.fpga.hop_size # Hop size acording to AIFPGA
+            self.prev_data=self.cur_data.iloc[-self.counter:]
+        
+        data = self.cur_data.copy()
+        data = scale_vals(data)
+        pass_threshold = self.check_df_threshold(data)
 
-        data = self.cur_data
-        self.cur_data = pd.DataFrame(columns=self.cols)
+        # Std Activated -> get chances and res_fpga
+        if pass_threshold:
+            chance_fpga, res_fpga = self.fpga.fpga_predict(data)
+            if res_fpga!=self.fpga.idle_code:
+                # Reset margin to 2
+                self.margin=errMarg
 
-        feat = self.check_df_threshold(data)
-        if isinstance(feat, int):
-            return feat
-
-#NOTE checkpoint!!!
-        # store index where std > threshold -> Start Call AI from index
-        # True -> call Ai Predict Function -> store in res_ls               2 out of 3 predictions should not be IDLE & keep last val to compare with next half if std > thres
-        if self.prev_std_bool:
-            idx = feat.std_a[feat.std_a==max_std].index.tolist()[0]*self.fpga.frame_size
-            frames = extract_frames(data,self.fpga.frame_size,self.fpga.hop_size,start_idx=idx)
-            tmp_res=[]
-
-            for frame in frames:
-                res_fpga = self.fpga.fpga_predict(frame)
-                tmp_res.append(res_fpga)
-        # if Predict res list mode == IDLE -> Ignore Threshold Rise
-        # res_ls = res_ls[last]
-            
-            if res_mode==4:
-                res_mode = stats.mode(tmp_res)[0][0]
-                self.res_ls=[self.res_ls[-1]]
-        # else res_ls append res > check res_lsmode
-            else:
-                if res_mode!=self.res_ls[-1]:
-                    ret_val = self.res_ls[-1]
-                    self.res_ls=[res_mode]
-                    return ret_val
-                else:
-                    self.res_ls.append(res_mode)
-        # if res_mode != prevres:
-            # return res_ls content                                         Ensure action done before return res
-        return 4 # IDLE
+            # NOTE on actual fpga, run softmax first
+            # if chances greater than 0.88 append
+                if chance_fpga[0][res_fpga] > 0.75:
+                    self.res_ls.append(res_fpga)
+            else: # the res_fpga IS IDLE
+                ret_val = self.checkMargins()
+                return ret_val
+           
+        return self.fpga.idle_code

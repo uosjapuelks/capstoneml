@@ -9,6 +9,9 @@ import scipy.stats as stats
 def scale_255(x):
     return (x)/255
 
+def softmax(x):
+    return(np.exp(x)/np.exp(x).sum())
+
 def scale_vals(data):
     data['gx'] = data['gx'].apply(scale_255)
     data['gy'] = data['gy'].apply(scale_255)

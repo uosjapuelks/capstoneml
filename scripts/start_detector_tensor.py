@@ -22,30 +22,47 @@ class Detector:
         self.fpga = AI_FPGA()
         self.res_ls = [self.fpga.idle_code]
         self.feat_df = pd.DataFrame()
-        self.prev_std_bool = False
+        self.margin = 0
         self.counter = 0
 
+    # Collect and accumulate rows into dataframes of 20
     def process_data(self, raw_data_row):
         raw_data_row = np.array(raw_data_row).reshape(1,6)
         new_row = pd.DataFrame(raw_data_row, columns=self.cols)
         self.cur_data=pd.concat([self.prev_data, new_row], ignore_index=True)
         self.prev_data=self.cur_data.iloc[:]
 
+    # Check if selected threshold is exceeded
     def check_df_threshold(self, data):
-    # current data
-    # current tmp
-    # Append data to prev -> into tmp
-    # prev = later half of data
-        # tmp = pd.concat([self.prev_data, data], ignore_index=True)
-        # self.prev_data=data.iloc[-self.counter:]
         feat = extract_std_range(data, self.fpga.frame_size)
-        # self.cur_data=data
         max_std = (max(feat['std_a']))
-        return max_std > 0.0
+        return max_std > 0.065
 
+    # Check for return value
+    def checkRetVal(self):
+        length = len(self.res_ls)
+        ret_val = int(stats.mode(self.res_ls, keepdims=True)[0][0])
+        if ret_val==0 and length>10:
+            self.res_ls = [self.fpga.idle_code]
+            return ret_val
+        elif length > 3 and ret_val!=0:
+            self.res_ls = [self.fpga.idle_code]
+            return ret_val
+        else:
+            return self.fpga.idle_code
+    
+    # margins help with acccidental classification of idle randomly
+    def checkMargins(self):
+        if self.margin==0:
+            ret_val = self.checkRetVal()
+        else:
+            self.margin-=1
+            ret_val = self.fpga.idle_code
+        return ret_val
+        
 
 # Function - Constantly called by External Comms after initializing class
-    def eval_data(self, raw_data):
+    def eval_data(self, raw_data, errMarg=1):
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
@@ -60,38 +77,17 @@ class Detector:
 
         # Std Activated -> get chances and res_fpga
         if pass_threshold:
-            self.prev_std_bool=True
             chance_fpga, res_fpga = self.fpga.fpga_predict(data)
             if res_fpga!=self.fpga.idle_code:
+                # Reset margin to 2
+                self.margin=errMarg
             # NOTE on actual fpga, run softmax first
             # if chances greater than 0.88 append
-                if chance_fpga[0][res_fpga] > 0.80:
+                if chance_fpga[0][res_fpga] > 0.75:
                     self.res_ls.append(res_fpga)
-                else:
-                    return self.fpga.idle_code
-            else:
-                return self.fpga.idle_code
-            
-        #     else:
-        #         self.res_ls.append(self.fpga.idle_code)
-        #     # if latest append is IDLE
-        #     if self.res_ls[-1]==self.fpga.idle_code or self.res_ls[-1]!=self.res_ls[-2]:
-        #         if len(self.res_ls) > 1:
-        #             ret_val = self.res_ls[-2]
-        #             self.res_ls=[self.res_ls[-1]]
-        #             if ret_val==None:
-        #                 ret_val=self.fpga.idle_code
-        #             return ret_val
-        #         ## CAUSING PROBLEMS
-        #         else:
-        #             self.res_ls=[self.fpga.idle_code]
-        #             return self.fpga.idle_code
-        # elif self.prev_std_bool:
-        #     print("MAYBE THIS", stats.mode(self.res_ls, keepdims=True)[0][0])
-        #     return 1
-        # else:
-        #     self.prev_std_bool=False
-        #     return self.fpga.idle_code
-
-        return res_fpga
+            else: # the res_fpga IS IDLE
+                ret_val = self.checkMargins()
+                return ret_val
+           
+        return self.fpga.idle_code
 

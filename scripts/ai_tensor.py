@@ -7,7 +7,7 @@ from pathlib import Path
 from filepaths import paths
 
 seconds = 1
-Fs = 20
+Fs = 40
 
 class AI_FPGA:
     def __init__(self):
@@ -17,12 +17,11 @@ class AI_FPGA:
 
     seconds = seconds
     Fs = Fs
-    frame_size = int(Fs*seconds) # 20Hz * 1 = 20
-    hop_size = int(Fs*seconds/4)
+    frame_size = int(Fs*seconds/2) # 20Hz * 1 = 20
+    hop_size = int(Fs*seconds/8)
     idle_code = 2
 
     def fpga_predict(self, test_data):
         data = np.array(test_data).reshape(1,20,6)
         ans = self.model.predict(data)
-        print(ans)
         return ans, np.argmax(ans)

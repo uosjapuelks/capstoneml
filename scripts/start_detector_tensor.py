@@ -38,7 +38,7 @@ class Detector:
     # prev = later half of data
         # tmp = pd.concat([self.prev_data, data], ignore_index=True)
         # self.prev_data=data.iloc[-self.counter:]
-        feat = extract_std_range(data, self.fpga.Fs)
+        feat = extract_std_range(data, self.fpga.frame_size)
         # self.cur_data=data
         max_std = (max(feat['std_a']))
         return max_std > 0.0
@@ -59,19 +59,19 @@ class Detector:
         pass_threshold = self.check_df_threshold(data)
 
         # Std Activated -> get chances and res_fpga
-        # if self.prev_std_bool:
-
-
-        # if pass_threshold:
-        #     self.prev_std_bool=True
-        #     chance_fpga, res_fpga = self.fpga.fpga_predict(data)
-        #     if res_fpga!=2:
-        #         print(res_fpga)
+        if pass_threshold:
+            self.prev_std_bool=True
+            chance_fpga, res_fpga = self.fpga.fpga_predict(data)
+            if res_fpga!=self.fpga.idle_code:
+            # NOTE on actual fpga, run softmax first
+            # if chances greater than 0.88 append
+                if chance_fpga[0][res_fpga] > 0.80:
+                    self.res_ls.append(res_fpga)
+                else:
+                    return self.fpga.idle_code
+            else:
+                return self.fpga.idle_code
             
-        #     # NOTE on actual fpga, run softmax first
-        #     # if chances greater than 0.88 append
-        #     if chance_fpga[0][res_fpga] > 0.00:
-        #         self.res_ls.append(res_fpga)
         #     else:
         #         self.res_ls.append(self.fpga.idle_code)
         #     # if latest append is IDLE
@@ -92,8 +92,6 @@ class Detector:
         # else:
         #     self.prev_std_bool=False
         #     return self.fpga.idle_code
-
-        chance_fpga, res_fpga = self.fpga.fpga_predict(data)
 
         return res_fpga
 

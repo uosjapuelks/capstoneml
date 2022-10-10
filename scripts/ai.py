@@ -18,9 +18,10 @@ class AI_FPGA:
     ### TAKE NOTE! Fs MAY CHANGE
     ###
     seconds = 1
-    Fs = 20
-    frame_size = Fs*seconds # 20Hz * 1 = 20
+    Fs = 40
+    frame_size = int(Fs*seconds/2) # 20Hz * 1 = 20
     hop_size = int(Fs*seconds/2)
+    idle_code = 2
 
     def fpga_predict(self, test_data):
         test_data = np.array(test_data).reshape(120)
@@ -31,4 +32,5 @@ class AI_FPGA:
         self.dma.sendchannel.wait()
         self.dma.recvchannel.wait()
 
-        return int(self.out_buffer0[0])
+        chances = self.out_buffer0[0]
+        return chances, np.argmax(chances)

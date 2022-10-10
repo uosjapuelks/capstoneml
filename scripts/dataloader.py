@@ -134,12 +134,12 @@ def get_target_feat(data, verbose=False):
 def extract_std_range(df_copy, timestep, timestart=0):
     idx = 0-timestep
     all_time_features=[]
-    for i in range(int(df_copy.shape[0]/timestep)):
-        idx += timestep
-        df_c_tmp = df_copy.iloc[idx:idx+timestep,:]
-        features_names = get_target_feat(df_c_tmp, verbose=True)
-        features = get_target_feat(df_c_tmp)
-        all_time_features.append(features)
+    # for i in range(int(df_copy.shape[0]/timestep)):
+    idx += timestep
+    df_c_tmp = df_copy.iloc[idx:idx+timestep,:]
+    features_names = get_target_feat(df_c_tmp, verbose=True)
+    features = get_target_feat(df_c_tmp)
+    all_time_features.append(features)
 
     feat_df = pd.DataFrame(all_time_features, columns=features_names)
     feat_df['time'] = [x+timestart for x in range(feat_df.shape[0])]

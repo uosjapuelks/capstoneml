@@ -1,15 +1,11 @@
 import numpy as np
 import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 from scipy.stats import stats
 
 from ai_tensor import AI_FPGA
 from dataloader import extract_std_range
-from model_utils_training import extract_frames
-
-
-# Permanent
-# fs (frequency)
-fs = 20
+from model_utils_training import extract_frames, scale_vals
 
 # Make Class
 class Detector:
@@ -24,20 +20,28 @@ class Detector:
         self.prev_data = pd.DataFrame(columns=cols)
         self.cur_data = pd.DataFrame(columns=cols)
         self.fpga = AI_FPGA()
-    
-    feat_df = pd.DataFrame()
-    prev_std_bool = False
-    res_ls = [2]
-    counter = -1
-
-# Setup DMA stuff
-    
+        self.res_ls = [self.fpga.idle_code]
+        self.feat_df = pd.DataFrame()
+        self.prev_std_bool = False
+        self.counter = 0
 
     def process_data(self, raw_data_row):
         raw_data_row = np.array(raw_data_row).reshape(1,6)
         new_row = pd.DataFrame(raw_data_row, columns=self.cols)
-        self.cur_data=pd.concat([self.cur_data, new_row], ignore_index=True)
-        return
+        self.cur_data=pd.concat([self.prev_data, new_row], ignore_index=True)
+        self.prev_data=self.cur_data.iloc[:]
+
+    def check_df_threshold(self, data):
+    # current data
+    # current tmp
+    # Append data to prev -> into tmp
+    # prev = later half of data
+        # tmp = pd.concat([self.prev_data, data], ignore_index=True)
+        # self.prev_data=data.iloc[-self.counter:]
+        feat = extract_std_range(data, self.fpga.Fs)
+        # self.cur_data=data
+        max_std = (max(feat['std_a']))
+        return max_std > 0.0
 
 
 # Function - Constantly called by External Comms after initializing class
@@ -45,65 +49,51 @@ class Detector:
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
-            return 2
+            return self.fpga.idle_code
         elif self.counter==20:
-            self.counter=-1
+            self.counter-=self.fpga.hop_size # Hop size acording to AIFPGA
+            self.prev_data=self.cur_data.iloc[-self.counter:]
+        
+        data = self.cur_data.copy()
+        data = scale_vals(data)
+        pass_threshold = self.check_df_threshold(data)
 
-        data = self.cur_data
-        self.cur_data = pd.DataFrame(columns=self.cols)
+        # Std Activated -> get chances and res_fpga
+        # if self.prev_std_bool:
 
-    # current data
-    # current tmp
-    # Append data to prev -> into tmp
-    # prev = later half of data
-        tmp = pd.concat([self.prev_data,data], ignore_index=True)
-        self.prev_data = data.iloc[int(fs/2):]
-    
-    # Extract features (range & std only)
-        feat = extract_std_range(tmp, fs, timestart=0)
 
-    # check if std > threshold (ONCE - so check max)
-    # if True: prev_std_bool = True 
-        max_std = (max(feat['std_a']))
-        if max_std > 0.075:
-            self.prev_std_bool = True
-    # if False: 
-        # if prev_std_bool -> set False
-        # release res
-        else:
-            if self.prev_std_bool==True:
-                self.prev_std_bool = False
-                # RELEASE RES
-                # print(self.res_ls)
-                return stats.mode(self.res_ls)[0][0] # NOT SURE
-            else:
-                return 2 # (4 IS IDLE)
+        # if pass_threshold:
+        #     self.prev_std_bool=True
+        #     chance_fpga, res_fpga = self.fpga.fpga_predict(data)
+        #     if res_fpga!=2:
+        #         print(res_fpga)
+            
+        #     # NOTE on actual fpga, run softmax first
+        #     # if chances greater than 0.88 append
+        #     if chance_fpga[0][res_fpga] > 0.00:
+        #         self.res_ls.append(res_fpga)
+        #     else:
+        #         self.res_ls.append(self.fpga.idle_code)
+        #     # if latest append is IDLE
+        #     if self.res_ls[-1]==self.fpga.idle_code or self.res_ls[-1]!=self.res_ls[-2]:
+        #         if len(self.res_ls) > 1:
+        #             ret_val = self.res_ls[-2]
+        #             self.res_ls=[self.res_ls[-1]]
+        #             if ret_val==None:
+        #                 ret_val=self.fpga.idle_code
+        #             return ret_val
+        #         ## CAUSING PROBLEMS
+        #         else:
+        #             self.res_ls=[self.fpga.idle_code]
+        #             return self.fpga.idle_code
+        # elif self.prev_std_bool:
+        #     print("MAYBE THIS", stats.mode(self.res_ls, keepdims=True)[0][0])
+        #     return 1
+        # else:
+        #     self.prev_std_bool=False
+        #     return self.fpga.idle_code
 
-        # store index where std > threshold -> Start Call AI from index
-        # True -> call Ai Predict Function -> store in res_ls               2 out of 3 predictions should not be IDLE & keep last val to compare with next half if std > thres
-        if self.prev_std_bool:
-            idx = feat.std_a[feat.std_a==max_std].index.tolist()[0]*self.fpga.frame_size
-            frames = extract_frames(data,self.fpga.frame_size,self.fpga.hop_size,start_idx=idx)
-            tmp_res=[]
-            print(frames)
-            for frame in frames:
-                res_fpga = self.fpga.fpga_predict(frame)
-                tmp_res.append(res_fpga)
-                print("NOW", res_fpga, "AND", tmp_res)
-        # if Predict res list mode == IDLE -> Ignore Threshold Rise
-        # res_ls = res_ls[last]
-            res_mode = stats.mode(tmp_res)[0][0]
-            if res_mode==2:
-                
-                self.res_ls=[self.res_ls[-1]]
-        # else res_ls append res > check res_lsmode
-            else:
-                if res_mode!=self.res_ls[-1]:
-                    ret_val = self.res_ls[-1]
-                    self.res_ls=[res_mode]
-                    return ret_val
-                else:
-                    self.res_ls.append(res_mode)
-        # if res_mode != prevres:
-            # return res_ls content                                         Ensure action done before return res
-        return 2 # IDLE
+        chance_fpga, res_fpga = self.fpga.fpga_predict(data)
+
+        return res_fpga
+

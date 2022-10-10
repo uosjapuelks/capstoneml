@@ -56,7 +56,10 @@ def get_frames(filt_df, frame_size, hop_size, labelled=True):
         # Retrieve most often used label in this segment
         if labelled:
             label = stats.mode(filt_df['Activity_code'][i: i + frame_size])[0][0]
-        frames.append([gx,gy,gz,ax,ay,az])
+        frame=[]
+        for idx in range(frame_size):
+            frame.append([ax[idx],ay[idx],az[idx],gx[idx],gy[idx],gz[idx]])
+        frames.append(frame)
         if labelled:
             labels.append(label)
 

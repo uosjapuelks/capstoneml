@@ -11,10 +11,7 @@ from modelling_utils import scale_vals
 class Detector:
 
 # Store
-# Global feat_df (init empty)
-# Global prev later half of data
-# Global prev_std_bool = init false
-# Global res_ls
+# CLASSES: {0: Exit, 1: Grenade, 2: EXIT, 3: Reload, 4: Shield}
     def __init__(self, cols=['ax','ay','az','gx','gy','gz']):
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)
@@ -36,13 +33,14 @@ class Detector:
     def check_df_threshold(self, data):
         feat = extract_std_range(data, self.fpga.frame_size)
         max_std = (max(feat['std_a']))
-        return max_std > 0.065
+        return max_std > 0.05
 
     # Check for return value
     def checkRetVal(self):
         length = len(self.res_ls)
-        ret_val = int(stats.mode(self.res_ls, keepdims=True)[0][0])
-        if ret_val==0 and length>10:
+        ret_val = int(stats.mode(self.res_ls)[0][0])
+        if ret_val==0 and length>3:
+            print("GOT: 0")
             self.res_ls = [self.fpga.idle_code]
             return ret_val
         elif length > 3 and ret_val!=0:
@@ -78,12 +76,12 @@ class Detector:
         if pass_threshold:
             chance_fpga, res_fpga = self.fpga.fpga_predict(data)
             if res_fpga!=self.fpga.idle_code:
-                # Reset margin to 2
+                # Reset margin to errMarg
                 self.margin=errMarg
 
             # NOTE on actual fpga, run softmax first
             # if chances greater than 0.88 append
-                if chance_fpga[0][res_fpga] > 0.75:
+                if chance_fpga[res_fpga] > 0.75 or res_fpga==0:
                     self.res_ls.append(res_fpga)
             else: # the res_fpga IS IDLE
                 ret_val = self.checkMargins()

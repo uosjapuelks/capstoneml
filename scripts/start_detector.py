@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
+
+import warnings
+warnings.filterwarnings('ignore')
+
 import threading
 from scipy.stats import stats
 
@@ -34,17 +38,16 @@ class Detector:
     def check_df_threshold(self, data):
         feat = extract_std_range(data, self.fpga.frame_size)
         max_std = (max(feat['std_a']))
-        return max_std > 0.05
+        return max_std > 0.065
 
     # Check for return value
     def checkRetVal(self):
         length = len(self.res_ls)
         ret_val = int(stats.mode(self.res_ls)[0][0])
         if ret_val==0 and length>10:
-            print("GOT: 0")
             self.res_ls = [self.fpga.idle_code]
             return ret_val
-        elif length > 3 and ret_val!=0:
+        elif length > 2 and ret_val!=0:
             self.res_ls = [self.fpga.idle_code]
             return ret_val
         else:
@@ -82,7 +85,7 @@ class Detector:
 
             # NOTE on actual fpga, run softmax first
             # if chances greater than 0.88 append
-                if chance_fpga[res_fpga] > 0.75 or res_fpga==0:
+                if chance_fpga[res_fpga] > 0.70 or res_fpga==0:
                     self.res_ls.append(res_fpga)
             else: # the res_fpga IS IDLE
                 ret_val = self.checkMargins()

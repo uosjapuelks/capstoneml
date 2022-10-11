@@ -72,39 +72,3 @@ def extract_frames(raw_df, frame_size, hop_size, start_idx=0):
         frames.append([gx,gy,gz,ax,ay,az])
     frames = np.asarray(frames).reshape(-1, frame_size, N_FEATURES)
     return frames
-
-
-def calculate_emd(res, fs, tAxis, fAxis, kind='quadratic'):
-    upper_peaks, _ = find_peaks(res)
-    lower_peaks, _ = find_peaks(res)
-
-    f1 = interp1d(upper_peaks/fs,res[upper_peaks], kind=kind, fill_value = 'extrapolate')
-    f2 = interp1d(lower_peaks/fs,res[lower_peaks], kind=kind, fill_value = 'extrapolate')
-
-    y1 = f1(tAxis)
-    y2 = f2(tAxis)
-    y1[0:5] = 0
-    y1[-5:] = 0
-    y2[0:5] = 0
-    y2[-5:] = 0
-
-    avg_envelope = (y1 + y2) / 2
-
-    res1 = avg_envelope
-    imf2 = res - avg_envelope
-    # Calculate Fast Fourier Transform
-    xfft1 = np.abs(fft(res1,1024))
-    xfft1 = xfft1[0:512]
-
-    plt.figure(figsize = (20,8))
-    plt.subplot(1,2,1)
-    plt.plot(tAxis,res1)
-    plt.xlabel('Time [s]')
-    plt.title('Signal residual in the second iteration')
-    plt.subplot(1,2,2)
-    plt.plot(fAxis,xfft1)
-    plt.xlabel('Frequency [Hz]')
-    plt.ylabel('Magnitude')
-    plt.title('Signal residual spectrum in the second iteration')
-
-    return res1, imf2, xfft1

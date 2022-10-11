@@ -21,7 +21,7 @@ class AI_FPGA:
     seconds = 1
     Fs = 40
     frame_size = int(Fs*seconds/2) # 20Hz * 1 = 20
-    hop_size = int(Fs*seconds/2)
+    hop_size = int(Fs*seconds/8)
     idle_code = 2
 
     def fpga_predict(self, test_data):

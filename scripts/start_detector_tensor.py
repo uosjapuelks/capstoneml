@@ -9,12 +9,6 @@ from model_utils_training import extract_frames, scale_vals
 
 # Make Class
 class Detector:
-
-# Store
-# Global feat_df (init empty)
-# Global prev later half of data
-# Global prev_std_bool = init false
-# Global res_ls
     def __init__(self, cols=['ax','ay','az','gx','gy','gz']):
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)

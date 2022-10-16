@@ -44,7 +44,7 @@ class Detector:
     def checkRetVal(self):
         length = len(self.res_ls)
         ret_val = int(stats.mode(self.res_ls)[0][0])
-        if ret_val==0 and length>10:
+        if ret_val==0 and length>15:
             self.res_ls = [self.fpga.idle_code]
             return ret_val
         elif length > 2 and ret_val!=0:

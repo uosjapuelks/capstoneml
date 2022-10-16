@@ -3,11 +3,11 @@ from pynq import allocate
 import numpy as np
 import os
 
-from filepaths_extComms import paths
+from filepaths import paths
 from modelling_utils import softmax
 
 BIT = os.path.join(paths.get('BITS_DIR'), 'a_fantastic_conv.bit')
-print(BIT)
+
 class AI_FPGA:
     overlay = Overlay(BIT)
     dma = overlay.axi_dma_0

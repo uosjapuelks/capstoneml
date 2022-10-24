@@ -1,9 +1,23 @@
 import pandas as pd
 import numpy as np
-from filepaths_extComms import paths
+# from filepaths_extComms import paths
+from filepaths import paths
 
-def get_training_files():
-    trainfiles = list(paths.get('SELF_DIR').glob('*'))
+def get_training_files(walking=True):
+    personDirs = list(paths.get('SELF_DIR').glob('*'))
+    trainDirs=[]
+    for personDir in personDirs:
+        trainDirs.append(list(personDir.glob('standing')))
+        if walking:
+            trainDirs.append(list(personDir.glob('walking')))
+        trainDirs.append(list(personDir.glob('exit')))
+
+    trainfiles = []
+    for traindir in trainDirs:
+        for dir in traindir:
+            for file in list(dir.glob('*txt')):
+                trainfiles.append(file)
+
     return trainfiles
 
 def get_real_testdata():

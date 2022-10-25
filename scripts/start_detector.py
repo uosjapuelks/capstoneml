@@ -5,7 +5,6 @@ pd.options.mode.chained_assignment = None  # default='warn'
 import warnings
 warnings.filterwarnings('ignore')
 
-import threading
 from scipy.stats import stats
 
 from ai import AI_FPGA

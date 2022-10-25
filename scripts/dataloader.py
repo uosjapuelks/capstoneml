@@ -10,7 +10,7 @@ def get_training_files(walking=True):
         trainDirs.append(list(personDir.glob('standing')))
         if walking:
             trainDirs.append(list(personDir.glob('walking')))
-        trainDirs.append(list(personDir.glob('exit')))
+        trainDirs.append(list(personDir.glob('zexits')))
 
     trainfiles = []
     for traindir in trainDirs:

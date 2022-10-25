@@ -15,11 +15,11 @@ class Detector:
 # Global prev later half of data
 # Global prev_std_bool = init false
 # Global res_ls
-    def __init__(self, cols=['ax','ay','az','gx','gy','gz']):
+    def __init__(self, model='cnn-stand_walk' , cols=['ax','ay','az','gx','gy','gz']):
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)
         self.cur_data = pd.DataFrame(columns=cols)
-        self.fpga = AI_FPGA()
+        self.fpga = AI_FPGA(model)
         self.res_ls = [self.fpga.idle_code]
         self.feat_df = pd.DataFrame()
         self.margin = 0
@@ -42,10 +42,12 @@ class Detector:
     def checkRetVal(self):
         length = len(self.res_ls)
         ret_val = int(stats.mode(self.res_ls, keepdims=True)[0][0])
-        if ret_val==0 and length>10:
+        if ret_val==0 and length>15:
+            print(self.res_ls)
             self.res_ls = [self.fpga.idle_code]
             return ret_val
-        elif length > 3 and ret_val!=0:
+        elif length > 2 and ret_val!=0:
+            print(self.res_ls)
             self.res_ls = [self.fpga.idle_code]
             return ret_val
         else:
@@ -62,7 +64,7 @@ class Detector:
         
 
 # Function - Constantly called by External Comms after initializing class
-    def eval_data(self, raw_data, errMarg=1):
+    def eval_data(self, raw_data, errMarg=1, sensitivity=0.75):
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
@@ -83,7 +85,7 @@ class Detector:
                 self.margin=errMarg
             # NOTE on actual fpga, run softmax first
             # if chances greater than 0.88 append
-                if chance_fpga[0][res_fpga] > 0.75:
+                if chance_fpga[0][res_fpga] > sensitivity:
                     self.res_ls.append(res_fpga)
             else: # the res_fpga IS IDLE
                 ret_val = self.checkMargins()

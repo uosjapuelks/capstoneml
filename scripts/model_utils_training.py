@@ -81,6 +81,9 @@ def balance_frames(x, y, bal_num, classes_n=5):
             to_bal = len(s_idx)
         else:
             to_bal = bal_num
+        if i == 2:
+            to_bal = int(to_bal*1.7)
+
         print(to_bal, "SAMPLES!!")
         s_idx = sample(s_idx, to_bal)
 

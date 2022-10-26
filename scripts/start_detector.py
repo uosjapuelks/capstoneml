@@ -44,10 +44,10 @@ class Detector:
         length = len(self.res_ls)
         ret_val = int(stats.mode(self.res_ls)[0][0])
         if ret_val==0 and length>15:
-            self.res_ls = [self.fpga.idle_code]
+            # self.res_ls = [self.fpga.idle_code]
             return ret_val
-        elif length > 2 and ret_val!=0:
-            self.res_ls = [self.fpga.idle_code]
+        elif length > 4 and ret_val!=0:
+            # self.res_ls = [self.fpga.idle_code]
             return ret_val
         else:
             return self.fpga.idle_code
@@ -56,6 +56,7 @@ class Detector:
     def checkMargins(self):
         if self.margin==0:
             ret_val = self.checkRetVal()
+            self.res_ls = [self.res_ls[-1]]
         else:
             self.margin-=1
             ret_val = self.fpga.idle_code
@@ -79,19 +80,22 @@ class Detector:
         if pass_threshold:
             chance_fpga, res_fpga = self.fpga.fpga_predict(data)
             if res_fpga!=self.fpga.idle_code:
-                # Reset margin to errMarg
-                self.margin=errMarg
-
             # NOTE on actual fpga, run softmax first
             # if chances greater than 0.88 append
                 if chance_fpga[res_fpga] > sensitivity or res_fpga==0:
+                    # Reset margin to errMarg
+                    self.margin=errMarg
                     self.res_ls.append(res_fpga)
-                else:
-                    self.margin-=1
-            else: # the res_fpga IS IDLE
-                ret_val = self.checkMargins()
-                return ret_val
-        else:
-            self.margin-=1
-           
-        return self.fpga.idle_code
+        #         else:
+        #             ret_val = self.checkMargins()
+        #             return ret_val
+        #     else: # the res_fpga IS IDLE
+        #         ret_val = self.checkMargins()
+        #         return ret_val
+        # else:
+        #     ret_val = self.checkMargins()
+        #     return ret_val
+        ret_val = self.checkMargins()
+        return ret_val
+
+        # return self.fpga.idle_code

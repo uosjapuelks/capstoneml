@@ -16,11 +16,11 @@ class Detector:
 
 # Store
 # CLASSES: {0: Exit, 1: Grenade, 2: EXIT, 3: Reload, 4: Shield}
-    def __init__(self, cols=['ax','ay','az','gx','gy','gz']):
+    def __init__(self, model='cnn_mix_moretrng.bit', cols=['ax','ay','az','gx','gy','gz']):
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)
         self.cur_data = pd.DataFrame(columns=cols)
-        self.fpga = AI_FPGA()
+        self.fpga = AI_FPGA(model)
         self.res_ls = [self.fpga.idle_code]
         self.feat_df = pd.DataFrame()
         self.margin = 0
@@ -62,7 +62,7 @@ class Detector:
         return ret_val
 
 # Function - Constantly called by External Comms after initializing class
-    def eval_data(self, raw_data, errMarg=1):
+    def eval_data(self, raw_data, errMarg=1, sensitivity=0.70):
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
@@ -84,10 +84,14 @@ class Detector:
 
             # NOTE on actual fpga, run softmax first
             # if chances greater than 0.88 append
-                if chance_fpga[res_fpga] > 0.70 or res_fpga==0:
+                if chance_fpga[res_fpga] > sensitivity or res_fpga==0:
                     self.res_ls.append(res_fpga)
+                else:
+                    self.margin-=1
             else: # the res_fpga IS IDLE
                 ret_val = self.checkMargins()
                 return ret_val
+        else:
+            self.margin-=1
            
         return self.fpga.idle_code

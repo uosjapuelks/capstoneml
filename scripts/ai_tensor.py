@@ -11,7 +11,7 @@ seconds = 1
 Fs = 40
 
 class AI_FPGA:
-    def __init__(self, model='cnn-stand_walk'):
+    def __init__(self, model='cnn-mix-moretrng'):
         model_name = model
         MODEL_DIR = Path(paths.get('MODEL_DIR'), f'{model_name}.h5')
         self.model = tf.keras.models.load_model(MODEL_DIR)

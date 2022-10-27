@@ -16,7 +16,7 @@ class Detector:
 
 # Store
 # CLASSES: {0: Exit, 1: Grenade, 2: EXIT, 3: Reload, 4: Shield}
-    def __init__(self, model='cnn_mix_moretrng.bit', cols=['ax','ay','az','gx','gy','gz']):
+    def __init__(self, model='cnn-mix-moretrng.bit', cols=['ax','ay','az','gx','gy','gz']):
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)
         self.cur_data = pd.DataFrame(columns=cols)

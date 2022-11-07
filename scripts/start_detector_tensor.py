@@ -15,7 +15,7 @@ class Detector:
 # Global prev later half of data
 # Global prev_std_bool = init false
 # Global res_ls
-    def __init__(self, model='cnn-stand_walk' , cols=['ax','ay','az','gx','gy','gz']):
+    def __init__(self, model='cnn-mix-moretrng' , cols=['ax','ay','az','gx','gy','gz']):
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)
         self.cur_data = pd.DataFrame(columns=cols)

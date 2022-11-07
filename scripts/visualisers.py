@@ -39,12 +39,12 @@ def plot_activity(activity, data):
 
 def plot_activity_v2(activity, data):
     fig, (ax0, ax1) = plt.subplots(nrows=2, figsize=(18,6), sharex=True)
-    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS')
-    plot_axis(ax0, data['time'], data['gy'], 'GY-AXIS')
-    plot_axis(ax0, data['time'], data['gz'], 'GZ-AXIS')
-    plot_axis(ax1, data['time'], data['ax'], 'AX-AXIS')
-    plot_axis(ax1, data['time'], data['ay'], 'AY-AXIS')
-    plot_axis(ax1, data['time'], data['az'], 'AZ-AXIS')
+    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS', colour='r')
+    plot_axis(ax0, data['time'], data['gy'], 'GY-AXIS', colour='g')
+    plot_axis(ax0, data['time'], data['gz'], 'GZ-AXIS', colour='b')
+    plot_axis(ax1, data['time'], data['ax'], 'AX-AXIS', colour='r')
+    plot_axis(ax1, data['time'], data['ay'], 'AY-AXIS', colour='g')
+    plot_axis(ax1, data['time'], data['az'], 'AZ-AXIS', colour='b')
     
     plt.subplots_adjust(hspace=0.2)
     fig.suptitle(activity)
@@ -103,11 +103,11 @@ def plot_features(activity, data):
     plt.subplots_adjust(top=0.90)
     plt.show()
 
-def plot_axis(ax, x, y, title, label=''):
+def plot_axis(ax, x, y, title, label='', colour='g'):
     if label == '':
-        ax.plot(x,y,'g')
+        ax.plot(x,y,colour)
     else:
-        ax.plot(x, y, label=label)
+        ax.plot(x, y, colour,label=label)
     ax.set_title(title)
     ax.xaxis.set_visible(False)
     ax.set_ylim([min(y) - np.std(y), max(y) + np.std(y)])

@@ -2,6 +2,7 @@ from pathlib import Path
 from os import listdir, path
 
 ROOT_DIR = (Path.cwd()).parent
+ROOT_DIR = Path(ROOT_DIR, "jupyter_notebooks","capstoneml")
 
 DATA_DIR = Path(ROOT_DIR, "datasets")
 RAW_DIR = Path(DATA_DIR, "raw")
@@ -14,12 +15,11 @@ MODEL_DIR = Path(ROOT_DIR, "models")
 WEIGHT_DIR = Path(MODEL_DIR, "weights")
 
 BITS_DIR = Path(ROOT_DIR, "mlp_bitstreams")
-BITS_T_DIR = Path(ROOT_DIR, "mlp_bitstreams_testing")
 
 # paths.get('<NAME>')
 
 paths = {
-    'ROOT_DIR' : (Path.cwd()).parent,
+    'ROOT_DIR' : ROOT_DIR,
     'DATA_DIR' : Path(ROOT_DIR),
     'RAW_DIR' : Path(RAW_DIR),
     'SELF_DIR' : Path(SELF_DIR),
@@ -28,8 +28,7 @@ paths = {
     'GYRO_DIR' : Path(GYRO_DIR),
     'MODEL_DIR' : Path(MODEL_DIR),
     'WEIGHT_DIR' : Path(WEIGHT_DIR),
-    'BITS_DIR' : Path(BITS_DIR),
-    'BITS_T_DIR' : Path(BITS_T_DIR)
+    'BITS_DIR' : Path(BITS_DIR)
 }
 
 for p in paths.values():

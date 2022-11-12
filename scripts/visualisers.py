@@ -39,12 +39,26 @@ def plot_activity(activity, data):
 
 def plot_activity_v2(activity, data):
     fig, (ax0, ax1) = plt.subplots(nrows=2, figsize=(18,6), sharex=True)
-    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS')
-    plot_axis(ax0, data['time'], data['gy'], 'GY-AXIS')
-    plot_axis(ax0, data['time'], data['gz'], 'GZ-AXIS')
-    plot_axis(ax1, data['time'], data['ax'], 'AX-AXIS')
-    plot_axis(ax1, data['time'], data['ay'], 'AY-AXIS')
-    plot_axis(ax1, data['time'], data['az'], 'AZ-AXIS')
+    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS', colour='r')
+    plot_axis(ax0, data['time'], data['gy'], 'GY-AXIS', colour='g')
+    plot_axis(ax0, data['time'], data['gz'], 'GZ-AXIS', colour='b')
+    plot_axis(ax1, data['time'], data['ax'], 'AX-AXIS', colour='r')
+    plot_axis(ax1, data['time'], data['ay'], 'AY-AXIS', colour='g')
+    plot_axis(ax1, data['time'], data['az'], 'AZ-AXIS', colour='b')
+    
+    plt.subplots_adjust(hspace=0.2)
+    fig.suptitle(activity)
+    plt.subplots_adjust(top=0.90)
+    plt.show()
+
+def plot_activity_v3(activity, data, figsize=(6,4)):
+    fig, (ax0) = plt.subplots(nrows=1, figsize=figsize, sharex=True)
+    plot_axis(ax0, data['time'], data['gx'], label='GX-AXIS', colour='red')
+    plot_axis(ax0, data['time'], data['gy'], label='GY-AXIS', colour='green')
+    plot_axis(ax0, data['time'], data['gz'], label='GZ-AXIS', colour='blue')
+    plot_axis(ax0, data['time'], data['ax'], label='AX-AXIS', colour='pink')
+    plot_axis(ax0, data['time'], data['ay'], label='AY-AXIS', colour='cyan')
+    plot_axis(ax0, data['time'], data['az'], label='AZ-AXIS', colour='orange')
     
     plt.subplots_adjust(hspace=0.2)
     fig.suptitle(activity)
@@ -67,15 +81,31 @@ def plot_full(data):
 
 def plot_full_v2(data):
     fig, (ax0, ax1) = plt.subplots(nrows=2, figsize=(18,6), sharex=True)
-    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS', label='gx')
-    plot_axis(ax0, data['time'], data['gy'], 'GY-AXIS', label='gy')
-    plot_axis(ax0, data['time'], data['gz'], 'GZ-AXIS', label='gz')
+    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS', label='gx', colour='g')
+    plot_axis(ax0, data['time'], data['gy'], 'GY-AXIS', label='gy', colour='r')
+    plot_axis(ax0, data['time'], data['gz'], 'GZ-AXIS', label='gz', colour='b')
     plt.legend()
     plt.grid()
 
-    plot_axis(ax1, data['time'], data['ax'], 'AX-AXIS', label='ax')
-    plot_axis(ax1, data['time'], data['ay'], 'AY-AXIS', label='ay')
-    plot_axis(ax1, data['time'], data['az'], 'AZ-AXIS', label='az')
+    plot_axis(ax1, data['time'], data['ax'], 'AX-AXIS', label='ax', colour='g')
+    plot_axis(ax1, data['time'], data['ay'], 'AY-AXIS', label='ay', colour='r')
+    plot_axis(ax1, data['time'], data['az'], 'AZ-AXIS', label='az', colour='b')
+    plt.legend()
+    plt.grid()
+    
+    plt.subplots_adjust(hspace=0.2)
+    fig.suptitle("DATAFRAME")
+    plt.subplots_adjust(top=0.90)
+    plt.show()
+
+def plot_full_v3(data):
+    fig, (ax0) = plt.subplots(nrows=2, figsize=(18,6), sharex=True)
+    plot_axis(ax0, data['time'], data['gx'], 'GX-AXIS', label='gx', colour='red')
+    plot_axis(ax0, data['time'], data['gy'], 'GY-AXIS', label='gy', colour='blue')
+    plot_axis(ax0, data['time'], data['gz'], 'GZ-AXIS', label='gz', colour='green')
+    plot_axis(ax0, data['time'], data['ax'], 'AX-AXIS', label='ax', colour='pink')
+    plot_axis(ax0, data['time'], data['ay'], 'AY-AXIS', label='ay', colour='cyan')
+    plot_axis(ax0, data['time'], data['az'], 'AZ-AXIS', label='az', colour='orange')
     plt.legend()
     plt.grid()
     
@@ -103,14 +133,17 @@ def plot_features(activity, data):
     plt.subplots_adjust(top=0.90)
     plt.show()
 
-def plot_axis(ax, x, y, title, label=''):
+def plot_axis(ax, x, y, title="", label='', colour='g'):
     if label == '':
-        ax.plot(x,y,'g')
+        ax.plot(x,y,colour)
     else:
-        ax.plot(x, y, label=label)
+        ax.plot(x, y, colour,label=label)
+        ax.legend(loc='upper left')
     ax.set_title(title)
     ax.xaxis.set_visible(False)
-    ax.set_ylim([min(y) - np.std(y), max(y) + np.std(y)])
+    # ax.set_ylim([min(y) - np.std(y), max(y) + np.std(y)])
+    # ax.set_xlim([min(x), max(x)])
+    ax.set_ylim([0, 255])
     ax.set_xlim([min(x), max(x)])
     ax.grid(True)
 

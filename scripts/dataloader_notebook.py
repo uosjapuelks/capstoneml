@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-from filepaths_extComms import paths
-# from filepaths import paths
+from filepaths import paths
 
 def get_training_files(walking=True):
     personDirs = list(paths.get('SELF_DIR').glob('*'))

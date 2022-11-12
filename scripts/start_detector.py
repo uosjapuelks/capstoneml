@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
-import threading
+pd.options.mode.chained_assignment = None  # default='warn'
+
+import warnings
+warnings.filterwarnings('ignore')
+
 from scipy.stats import stats
 
 from ai import AI_FPGA
@@ -12,11 +16,12 @@ class Detector:
 
 # Store
 # CLASSES: {0: Exit, 1: Grenade, 2: EXIT, 3: Reload, 4: Shield}
-    def __init__(self, cols=['ax','ay','az','gx','gy','gz']):
+    def __init__(self, model='cnn-mix-moretrng.bit', cols=['ax','ay','az','gx','gy','gz']):
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)
         self.cur_data = pd.DataFrame(columns=cols)
         self.fpga = AI_FPGA()
+        # self.fpga = AI_FPGA(model)
         self.res_ls = [self.fpga.idle_code]
         self.feat_df = pd.DataFrame()
         self.margin = 0
@@ -30,21 +35,22 @@ class Detector:
         self.prev_data=self.cur_data.iloc[:]
 
     # Check if selected threshold is exceeded
-    def check_df_threshold(self, data):
+    def check_df_threshold(self, data, threshold=0.060):
         feat = extract_std_range(data, self.fpga.frame_size)
         max_std = (max(feat['std_a']))
-        return max_std > 0.05
+        return max_std > threshold
 
     # Check for return value
     def checkRetVal(self):
         length = len(self.res_ls)
         ret_val = int(stats.mode(self.res_ls)[0][0])
-        if ret_val==0 and length>3:
-            print("GOT: 0")
-            self.res_ls = [self.fpga.idle_code]
+        if ret_val==0 and length>15:
+            print("[START_DETECTOR]:",self.res_ls)
+            # self.res_ls = [self.fpga.idle_code]
             return ret_val
-        elif length > 3 and ret_val!=0:
-            self.res_ls = [self.fpga.idle_code]
+        elif length > self.ideal_len and ret_val!=0:
+            print("[START_DETECTOR]:",self.res_ls)
+            # self.res_ls = [self.fpga.idle_code]
             return ret_val
         else:
             return self.fpga.idle_code
@@ -52,14 +58,16 @@ class Detector:
     # margins help with acccidental classification of idle randomly
     def checkMargins(self):
         if self.margin==0:
+            # print("\r[START DETECTOR]: ", self.res_ls, end="")
             ret_val = self.checkRetVal()
+            self.res_ls = [self.res_ls[-1]]
         else:
             self.margin-=1
             ret_val = self.fpga.idle_code
         return ret_val
 
 # Function - Constantly called by External Comms after initializing class
-    def eval_data(self, raw_data, errMarg=1):
+    def eval_data(self, raw_data, errMarg=1, sensitivity=0.70, threshold=0.060, ideal_len=3):
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
@@ -70,21 +78,20 @@ class Detector:
         
         data = self.cur_data.copy()
         data = scale_vals(data)
-        pass_threshold = self.check_df_threshold(data)
+        pass_threshold = self.check_df_threshold(data, threshold)
 
         # Std Activated -> get chances and res_fpga
         if pass_threshold:
             chance_fpga, res_fpga = self.fpga.fpga_predict(data)
             if res_fpga!=self.fpga.idle_code:
-                # Reset margin to errMarg
-                self.margin=errMarg
-
             # NOTE on actual fpga, run softmax first
-            # if chances greater than 0.88 append
-                if chance_fpga[res_fpga] > 0.75 or res_fpga==0:
+            # if chances greater than sensitivity append
+                if chance_fpga[res_fpga] > sensitivity or res_fpga==0:
+                    # Reset margin to errMarg
+                    self.margin=errMarg
                     self.res_ls.append(res_fpga)
-            else: # the res_fpga IS IDLE
-                ret_val = self.checkMargins()
-                return ret_val
-           
-        return self.fpga.idle_code
+        self.ideal_len = ideal_len
+        ret_val = self.checkMargins()
+        return ret_val
+
+        # return self.fpga.idle_code

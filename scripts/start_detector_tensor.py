@@ -4,7 +4,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 from scipy.stats import stats
 
 from ai_tensor import AI_FPGA
-from dataloader import extract_std_range
+from dataloader_notebook import extract_std_range
 from model_utils_training import extract_frames, scale_vals
 
 # Make Class
@@ -33,10 +33,10 @@ class Detector:
         self.prev_data=self.cur_data.iloc[:]
 
     # Check if selected threshold is exceeded
-    def check_df_threshold(self, data):
+    def check_df_threshold(self, data, threshold=0.65):
         feat = extract_std_range(data, self.fpga.frame_size)
         max_std = (max(feat['std_a']))
-        return max_std > 0.065
+        return max_std > threshold
 
     # Check for return value
     def checkRetVal(self):
@@ -46,7 +46,7 @@ class Detector:
             print(self.res_ls)
             # self.res_ls = [self.fpga.idle_code]
             return ret_val
-        elif length > 4 and ret_val!=0:
+        elif length > self.ideal_len and ret_val!=0:
             print(self.res_ls)
             # self.res_ls = [self.fpga.idle_code]
             return ret_val
@@ -57,14 +57,14 @@ class Detector:
     def checkMargins(self):
         if self.margin==0:
             ret_val = self.checkRetVal()
-            self.res_ls = [self.res_ls[-1]]
+            self.res_ls = [self.fpga.idle_code]
         else:
             self.margin-=1
             ret_val = self.fpga.idle_code
         return ret_val
 
 # Function - Constantly called by External Comms after initializing class
-    def eval_data(self, raw_data, errMarg=1, sensitivity=0.75):
+    def eval_data(self, raw_data, errMarg=1, sensitivity=0.75, threshold=0.65, ideal_len=3):
         self.counter+=1
         self.process_data(raw_data) # Return df of raw data
         if self.counter < 20:
@@ -75,7 +75,7 @@ class Detector:
         
         data = self.cur_data.copy()
         data = scale_vals(data)
-        pass_threshold = self.check_df_threshold(data)
+        pass_threshold = self.check_df_threshold(data, threshold)
 
         # Std Activated -> get chances and res_fpga
         if pass_threshold:
@@ -83,13 +83,14 @@ class Detector:
             if res_fpga!=self.fpga.idle_code:
             # NOTE on actual fpga, run softmax first
             # if chances greater than 0.88 append
-                if chance_fpga[0][res_fpga] > sensitivity:
+                if chance_fpga[0][res_fpga] > sensitivity or res_fpga==0:
                     # Reset margin to 2
                     self.margin=errMarg
                     self.res_ls.append(res_fpga)
             # else: # the res_fpga IS IDLE
             #     ret_val = self.checkMargins()
             #     return ret_val
+        self.ideal_len=ideal_len
         ret_val = self.checkMargins()
         return ret_val
            

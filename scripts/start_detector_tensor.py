@@ -9,9 +9,6 @@ from model_utils_training import extract_frames, scale_vals
 
 # Make Class
 class Detector:
-<<<<<<< HEAD
-    def __init__(self, cols=['ax','ay','az','gx','gy','gz']):
-=======
 
 # Store
 # Global feat_df (init empty)
@@ -19,7 +16,6 @@ class Detector:
 # Global prev_std_bool = init false
 # Global res_ls
     def __init__(self, model='cnn-mix-moretrng' , cols=['ax','ay','az','gx','gy','gz']):
->>>>>>> ultra_96v
         self.cols = cols
         self.prev_data = pd.DataFrame(columns=cols)
         self.cur_data = pd.DataFrame(columns=cols)

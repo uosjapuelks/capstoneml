@@ -1,4 +1,5 @@
 # capstoneml
+FPGA Bitstreams are required to run certain scripts on the Ultra96. The bitstreams were intentionally left out of the repo as since users they can already be compiled from the code in this repo.
 
 ## notebook
 In notebooks, we have the notebooks used to train and evaluate models on both local computer and on the ultra96 board.

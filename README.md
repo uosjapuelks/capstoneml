@@ -3,16 +3,16 @@
 ## notebook
 In notebooks, we have the notebooks used to train and evaluate models on both local computer and on the ultra96 board.
 
-###Training Model:
+### Training Model:
 - conv_trainer.ipynb
 - explore_conv.ipynb: Used during exploration of a CNN model
 - main.ipynb: Training model on Unseen Data
 
-###Feature Extraction:
+### Feature Extraction:
 - feature_playground.ipynb: Playground to explore feature extraction
 - feature_emd.ipynb: Exploration of more features
 
-###Evaluations:
+### Evaluations:
 - main_clean.ipynb: locally evaluate and test out algorithm
 - eval_conv.ipynb: Evaluate and test algorithm with FPGA
 - video.ipynb: Notebook used during Idividual Progress Check
